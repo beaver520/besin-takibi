@@ -1677,7 +1677,6 @@ function switchHistoryAp(i){
 }
 
 function deleteDay(dateStr){
-  if(!confirm(dateStr+' tarihli kayıt silinsin mi?')) return;
   localStorage.removeItem('besin_'+dateStr);
   renderHistory();
 }
