@@ -191,6 +191,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="stab" onclick="switchSec('exercise',this)">🏋️ Egzersiz</button>
     <button class="stab" onclick="switchSec('supplements',this)">💊 Takviyeler</button>
     <button class="stab" onclick="switchSec('daily',this)">📊 Günlük</button>
+    <button class="stab" id="labTab" onclick="switchSec('lab',this)">🔬 Tahlil</button>
   </div>
 
   <!-- NUTRITION -->
@@ -359,6 +360,176 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <button onclick="saveSugar()" style="width:100%;padding:10px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Ölçümü Kaydet</button>
       <div id="sugarHistory" style="margin-top:12px"></div>
+    </div>
+
+  </div>
+
+  <!-- TAHLİL -->
+  <div class="section" id="sec-lab">
+
+    <div class="card">
+      <div class="card-title">🔬 Tahlil Sonuçları Girişi</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <label style="font-size:12px;color:#666;white-space:nowrap">Tahlil tarihi:</label>
+        <input type="date" id="labDate" style="flex:1;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;color:#1a1a1a;outline:none">
+        <button onclick="saveLabResults()" style="padding:8px 16px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Kaydet</button>
+      </div>
+
+      <!-- KAN ŞEKERİ & DİYABET -->
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#aaa;margin-bottom:8px;text-transform:uppercase">Kan Şekeri & Diyabet</div>
+      <div class="lab-grid" id="labGrid1">
+        <div class="lab-input-row" data-key="glikoz" data-min="70" data-max="100" data-unit="mg/dL" data-warn="100" data-high="126">
+          <span class="lab-name">Açlık Kan Şekeri</span>
+          <input type="number" class="lab-inp" placeholder="mg/dL" step="0.1">
+          <span class="lab-ref">70-100</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="hba1c" data-min="0" data-max="5.7" data-unit="%" data-warn="5.7" data-high="6.5">
+          <span class="lab-name">HbA1c</span>
+          <input type="number" class="lab-inp" placeholder="%" step="0.1">
+          <span class="lab-ref">&lt;5.7%</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="insülin" data-min="2" data-max="25" data-unit="μIU/mL" data-warn="25" data-high="30">
+          <span class="lab-name">İnsülin (açlık)</span>
+          <input type="number" class="lab-inp" placeholder="μIU/mL" step="0.1">
+          <span class="lab-ref">2-25</span>
+          <span class="lab-status"></span>
+        </div>
+      </div>
+
+      <!-- TİROİD -->
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#aaa;margin:14px 0 8px;text-transform:uppercase">Tiroid</div>
+      <div class="lab-grid" id="labGrid2">
+        <div class="lab-input-row" data-key="tsh" data-min="0.4" data-max="4" data-unit="mIU/L" data-warn="4" data-high="10">
+          <span class="lab-name">TSH</span>
+          <input type="number" class="lab-inp" placeholder="mIU/L" step="0.01">
+          <span class="lab-ref">0.4-4.0</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="st3" data-min="2.3" data-max="4.2" data-unit="pg/mL" data-warn="4.2" data-high="6">
+          <span class="lab-name">sT3</span>
+          <input type="number" class="lab-inp" placeholder="pg/mL" step="0.01">
+          <span class="lab-ref">2.3-4.2</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="st4" data-min="0.8" data-max="1.8" data-unit="ng/dL" data-warn="1.8" data-high="3">
+          <span class="lab-name">sT4</span>
+          <input type="number" class="lab-inp" placeholder="ng/dL" step="0.01">
+          <span class="lab-ref">0.8-1.8</span>
+          <span class="lab-status"></span>
+        </div>
+      </div>
+
+      <!-- KOLESTEROL -->
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#aaa;margin:14px 0 8px;text-transform:uppercase">Kolesterol Paneli</div>
+      <div class="lab-grid">
+        <div class="lab-input-row" data-key="totalKol" data-min="0" data-max="200" data-unit="mg/dL" data-warn="200" data-high="240">
+          <span class="lab-name">Total Kolesterol</span>
+          <input type="number" class="lab-inp" placeholder="mg/dL">
+          <span class="lab-ref">&lt;200</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="ldl" data-min="0" data-max="100" data-unit="mg/dL" data-warn="100" data-high="160">
+          <span class="lab-name">LDL</span>
+          <input type="number" class="lab-inp" placeholder="mg/dL">
+          <span class="lab-ref">&lt;100</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="hdl" data-min="50" data-max="999" data-unit="mg/dL" data-warn="50" data-high="0">
+          <span class="lab-name">HDL</span>
+          <input type="number" class="lab-inp" placeholder="mg/dL">
+          <span class="lab-ref">&gt;50 (kadın)</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="trigliserit" data-min="0" data-max="150" data-unit="mg/dL" data-warn="150" data-high="200">
+          <span class="lab-name">Trigliserit</span>
+          <input type="number" class="lab-inp" placeholder="mg/dL">
+          <span class="lab-ref">&lt;150</span>
+          <span class="lab-status"></span>
+        </div>
+      </div>
+
+      <!-- SİGARA HASARI -->
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#aaa;margin:14px 0 8px;text-transform:uppercase">Sigara Hasarı Göstergeleri</div>
+      <div class="lab-grid">
+        <div class="lab-input-row" data-key="crp" data-min="0" data-max="5" data-unit="mg/L" data-warn="5" data-high="10">
+          <span class="lab-name">CRP (inflamasyon)</span>
+          <input type="number" class="lab-inp" placeholder="mg/L" step="0.1">
+          <span class="lab-ref">&lt;5</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="cohb" data-min="0" data-max="3" data-unit="%" data-warn="3" data-high="10">
+          <span class="lab-name">COHb (sigara maruziyeti)</span>
+          <input type="number" class="lab-inp" placeholder="%" step="0.1">
+          <span class="lab-ref">&lt;3% (sigara içmeyende)</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="fev1" data-min="80" data-max="120" data-unit="%" data-warn="80" data-high="0">
+          <span class="lab-name">FEV1/FVC (solunum)</span>
+          <input type="number" class="lab-inp" placeholder="%" step="0.1">
+          <span class="lab-ref">&gt;80%</span>
+          <span class="lab-status"></span>
+        </div>
+      </div>
+
+      <!-- VİTAMİN & MİNERAL -->
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#aaa;margin:14px 0 8px;text-transform:uppercase">Vitamin & Mineral</div>
+      <div class="lab-grid">
+        <div class="lab-input-row" data-key="b12" data-min="200" data-max="900" data-unit="pg/mL" data-warn="200" data-high="0">
+          <span class="lab-name">B12</span>
+          <input type="number" class="lab-inp" placeholder="pg/mL">
+          <span class="lab-ref">200-900</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="d3" data-min="30" data-max="100" data-unit="ng/mL" data-warn="30" data-high="0">
+          <span class="lab-name">D Vitamini (25-OH)</span>
+          <input type="number" class="lab-inp" placeholder="ng/mL" step="0.1">
+          <span class="lab-ref">30-100</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="ferritin" data-min="12" data-max="150" data-unit="ng/mL" data-warn="12" data-high="200">
+          <span class="lab-name">Ferritin</span>
+          <input type="number" class="lab-inp" placeholder="ng/mL" step="0.1">
+          <span class="lab-ref">12-150 (kadın)</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="demir" data-min="60" data-max="170" data-unit="μg/dL" data-warn="60" data-high="0">
+          <span class="lab-name">Serum Demir</span>
+          <input type="number" class="lab-inp" placeholder="μg/dL">
+          <span class="lab-ref">60-170</span>
+          <span class="lab-status"></span>
+        </div>
+      </div>
+
+      <!-- KARACİĞER & BÖBREK -->
+      <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#aaa;margin:14px 0 8px;text-transform:uppercase">Karaciğer & Böbrek</div>
+      <div class="lab-grid">
+        <div class="lab-input-row" data-key="alt" data-min="0" data-max="35" data-unit="U/L" data-warn="35" data-high="56">
+          <span class="lab-name">ALT</span>
+          <input type="number" class="lab-inp" placeholder="U/L">
+          <span class="lab-ref">&lt;35</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="ast" data-min="0" data-max="40" data-unit="U/L" data-warn="40" data-high="60">
+          <span class="lab-name">AST</span>
+          <input type="number" class="lab-inp" placeholder="U/L">
+          <span class="lab-ref">&lt;40</span>
+          <span class="lab-status"></span>
+        </div>
+        <div class="lab-input-row" data-key="kreatinin" data-min="0.5" data-max="1.1" data-unit="mg/dL" data-warn="1.1" data-high="1.5" step="0.01">
+          <span class="lab-name">Kreatinin</span>
+          <input type="number" class="lab-inp" placeholder="mg/dL" step="0.01">
+          <span class="lab-ref">0.5-1.1 (kadın)</span>
+          <span class="lab-status"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAHLİL GEÇMİŞİ & TREND -->
+    <div class="card">
+      <div class="card-title">📈 Tahlil Geçmişi</div>
+      <div id="labHistory"><div style="font-size:13px;color:#aaa">Henüz tahlil kaydı yok</div></div>
     </div>
 
   </div>
@@ -1192,6 +1363,9 @@ function render(){
   document.getElementById('pNameEl').textContent=p.label;
   document.getElementById('pMetaEl').textContent=p.meta;
   renderMetrics();renderWindow();renderFoods();renderSupps();renderExercise();
+  // Tahlil sekmesi sadece Gökmen'de görünsün
+  const labTab = document.getElementById('labTab');
+  if(labTab) labTab.style.display = profiles[ap].isAnne ? 'flex' : 'none';
 }
 function switchP(i){ap=i;_fullRender();}
 function switchSec(id,btn){
@@ -1588,6 +1762,226 @@ function copyAndEval(){
 
 
 
+// ── TAHLİL SİSTEMİ ────────────────────────────────────────────────
+
+function getLabStatus(val, row){
+  const min = parseFloat(row.dataset.min);
+  const max = parseFloat(row.dataset.max);
+  const warn = parseFloat(row.dataset.warn);
+  const high = parseFloat(row.dataset.high);
+  const key = row.dataset.key;
+
+  // HDL için ters mantık (yüksek iyi)
+  if(key === 'hdl'){
+    if(val >= 50) return {cls:'lab-ok', icon:'✓'};
+    if(val >= 40) return {cls:'lab-warn', icon:'!'};
+    return {cls:'lab-high', icon:'✗'};
+  }
+  // FEV1 için ters mantık
+  if(key === 'fev1'){
+    if(val >= 80) return {cls:'lab-ok', icon:'✓'};
+    if(val >= 70) return {cls:'lab-warn', icon:'!'};
+    return {cls:'lab-high', icon:'✗'};
+  }
+  // B12, D3, ferritin, demir — düşük kötü
+  if(['b12','d3','ferritin','demir'].includes(key)){
+    if(val >= min && val <= max) return {cls:'lab-ok', icon:'✓'};
+    if(val < min) return {cls:'lab-warn', icon:'↓'};
+    return {cls:'lab-warn', icon:'↑'};
+  }
+  // Genel: düşük iyi
+  if(val <= warn) return {cls:'lab-ok', icon:'✓'};
+  if(!high || val <= high) return {cls:'lab-warn', icon:'!'};
+  return {cls:'lab-high', icon:'✗'};
+}
+
+function updateLabStatus(){
+  document.querySelectorAll('.lab-input-row').forEach(row => {
+    const inp = row.querySelector('.lab-inp');
+    const status = row.querySelector('.lab-status');
+    const val = parseFloat(inp.value);
+    if(!inp.value || isNaN(val)){
+      status.className='lab-status lab-empty';
+      status.textContent='–';
+      return;
+    }
+    const s = getLabStatus(val, row);
+    status.className='lab-status '+s.cls;
+    status.textContent=s.icon;
+  });
+}
+
+// Input değişince renk güncelle
+document.addEventListener('input', e => {
+  if(e.target.classList.contains('lab-inp')) updateLabStatus();
+});
+
+function saveLabResults(){
+  const dateEl = document.getElementById('labDate');
+  const dateVal = dateEl.value;
+  if(!dateVal){ alert('Tahlil tarihi seçin'); return; }
+  
+  const parts = dateVal.split('-');
+  const dateStr = parts[2]+'.'+parts[1]+'.'+parts[0];
+  
+  const results = {};
+  document.querySelectorAll('.lab-input-row').forEach(row => {
+    const val = row.querySelector('.lab-inp').value;
+    if(val) results[row.dataset.key] = parseFloat(val);
+  });
+  
+  if(!Object.keys(results).length){ alert('En az bir değer girin'); return; }
+  
+  // localStorage'a kaydet
+  const key = 'lab_gokmen_'+dateStr;
+  const existing = JSON.parse(localStorage.getItem(key)||'{}');
+  const merged = Object.assign(existing, {date: dateStr, values: Object.assign(existing.values||{}, results)});
+  localStorage.setItem(key, JSON.stringify(merged));
+  
+  renderLabHistory();
+  alert(dateStr+' tarihli tahlil kaydedildi ✓');
+}
+
+function getLabResults(){
+  const results = [];
+  for(let i=0; i<localStorage.length; i++){
+    const key = localStorage.key(i);
+    if(key && key.startsWith('lab_gokmen_')){
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        results.push(data);
+      } catch(e){}
+    }
+  }
+  return results.sort((a,b) => {
+    const pa=a.date.split('.').reverse().join('');
+    const pb=b.date.split('.').reverse().join('');
+    return pb.localeCompare(pa);
+  });
+}
+
+const LAB_LABELS = {
+  glikoz:'Açlık Şekeri', hba1c:'HbA1c', insülin:'İnsülin',
+  tsh:'TSH', st3:'sT3', st4:'sT4',
+  totalKol:'Total Kol.', ldl:'LDL', hdl:'HDL', trigliserit:'Trigliserit',
+  crp:'CRP', cohb:'COHb', fev1:'FEV1/FVC',
+  b12:'B12', d3:'D Vitamini', ferritin:'Ferritin', demir:'Demir',
+  alt:'ALT', ast:'AST', kreatinin:'Kreatinin'
+};
+
+const LAB_UNITS = {
+  glikoz:'mg/dL', hba1c:'%', insülin:'μIU/mL',
+  tsh:'mIU/L', st3:'pg/mL', st4:'ng/dL',
+  totalKol:'mg/dL', ldl:'mg/dL', hdl:'mg/dL', trigliserit:'mg/dL',
+  crp:'mg/L', cohb:'%', fev1:'%',
+  b12:'pg/mL', d3:'ng/mL', ferritin:'ng/mL', demir:'μg/dL',
+  alt:'U/L', ast:'U/L', kreatinin:'mg/dL'
+};
+
+// Referans aralıkları - status kontrolü için
+const LAB_REFS = {
+  glikoz:{warn:100,high:126,reverse:false},
+  hba1c:{warn:5.7,high:6.5,reverse:false},
+  insülin:{warn:25,high:30,reverse:false},
+  tsh:{min:0.4,warn:4,high:10,reverse:false},
+  st3:{min:2.3,warn:4.2,high:6,reverse:false},
+  st4:{min:0.8,warn:1.8,high:3,reverse:false},
+  totalKol:{warn:200,high:240,reverse:false},
+  ldl:{warn:100,high:160,reverse:false},
+  hdl:{warn:50,high:0,reverse:true},
+  trigliserit:{warn:150,high:200,reverse:false},
+  crp:{warn:5,high:10,reverse:false},
+  cohb:{warn:3,high:10,reverse:false},
+  fev1:{warn:80,high:0,reverse:true},
+  b12:{min:200,max:900,reverse:'range'},
+  d3:{min:30,max:100,reverse:'range'},
+  ferritin:{min:12,max:150,reverse:'range'},
+  demir:{min:60,max:170,reverse:'range'},
+  alt:{warn:35,high:56,reverse:false},
+  ast:{warn:40,high:60,reverse:false},
+  kreatinin:{warn:1.1,high:1.5,reverse:false},
+};
+
+function getStatusFromRef(key, val){
+  const ref = LAB_REFS[key];
+  if(!ref) return {cls:'lab-empty',icon:'–'};
+  if(ref.reverse === true){ // yüksek iyi (HDL, FEV1)
+    if(val >= ref.warn) return {cls:'lab-ok',icon:'✓'};
+    if(val >= ref.warn*0.8) return {cls:'lab-warn',icon:'!'};
+    return {cls:'lab-high',icon:'✗'};
+  }
+  if(ref.reverse === 'range'){ // aralık içi iyi
+    if(val >= ref.min && val <= ref.max) return {cls:'lab-ok',icon:'✓'};
+    if(val < ref.min) return {cls:'lab-warn',icon:'↓'};
+    return {cls:'lab-warn',icon:'↑'};
+  }
+  // düşük iyi
+  if(val <= ref.warn) return {cls:'lab-ok',icon:'✓'};
+  if(!ref.high || val <= ref.high) return {cls:'lab-warn',icon:'!'};
+  return {cls:'lab-high',icon:'✗'};
+}
+
+function renderLabHistory(){
+  const el = document.getElementById('labHistory');
+  if(!el) return;
+  const results = getLabResults();
+  if(!results.length){
+    el.innerHTML='<div style="font-size:13px;color:#aaa">Henüz tahlil kaydı yok</div>';
+    return;
+  }
+  
+  el.innerHTML = results.map(r => {
+    const vals = r.values || {};
+    const rows = Object.entries(vals).map(([key, val]) => {
+      const s = getStatusFromRef(key, val);
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:.5px solid #f5f5f5">'
+        +'<span style="font-size:13px;color:#555">'+(LAB_LABELS[key]||key)+'</span>'
+        +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:13px;font-weight:600;color:#1a1a1a">'+val+' <span style="font-size:11px;color:#aaa">'+(LAB_UNITS[key]||'')+'</span></span>'
+        +'<span style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0" class="'+s.cls+'">'+s.icon+'</span>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+    
+    return '<div style="background:#f9f9f9;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid #eee">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+      +'<span style="font-weight:600;font-size:14px;color:#1a1a1a">'+r.date+'</span>'
+      +'<div style="display:flex;gap:4px">'
+      +'<button data-labdate="'+r.date+'" onclick="loadLabResults(this.dataset.labdate)" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555">Düzenle</button>'
+      +'<button data-labdate="'+r.date+'" onclick="deleteLabResults(this.dataset.labdate)" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ffcdd2;background:#fff;cursor:pointer;color:#c0392b">Sil</button>'
+      +'</div>'
+      +'</div>'
+      +rows
+      +'</div>';
+  }).join('');
+}
+
+function loadLabResults(dateStr){
+  const key = 'lab_gokmen_'+dateStr;
+  const data = JSON.parse(localStorage.getItem(key)||'{}');
+  if(!data.values){ alert('Veri bulunamadı'); return; }
+  
+  // Tarihi seçiciye yaz
+  const parts = dateStr.split('.');
+  document.getElementById('labDate').value = parts[2]+'-'+parts[1]+'-'+parts[0];
+  
+  // Değerleri forma doldur
+  document.querySelectorAll('.lab-input-row').forEach(row => {
+    const key2 = row.dataset.key;
+    const inp = row.querySelector('.lab-inp');
+    inp.value = data.values[key2] !== undefined ? data.values[key2] : '';
+  });
+  updateLabStatus();
+  
+  // Forma scroll et
+  document.getElementById('sec-lab').scrollIntoView({behavior:'smooth'});
+}
+
+function deleteLabResults(dateStr){
+  localStorage.removeItem('lab_gokmen_'+dateStr);
+  renderLabHistory();
+}
+
 window.addEventListener('load',()=>{
   const saved=localStorage.getItem('scriptUrl')||'';
   if(saved)document.getElementById('scriptUrl').value=saved;
@@ -1598,6 +1992,9 @@ window.addEventListener('load',()=>{
     dp.value = now.toISOString().split('T')[0];
   }
   loadDate(SELECTED_DATE);
+  // Tahlil tarih seçicisini bugüne ayarla
+  const ld = document.getElementById('labDate');
+  if(ld){ const now=new Date(); ld.value=now.toISOString().split('T')[0]; }
   _fullRender();
 });
 
