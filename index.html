@@ -1634,7 +1634,10 @@ function renderHistory(){
       return '<div style="background:'+(isToday?'#f0f8ff':'#f9f9f9')+';border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1.5px solid '+(isToday?'#aed6f1':'#eee')+'">'
         +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
         +'<span style="font-weight:600;font-size:14px;color:#1a1a1a">'+(isToday?'📌 Bugün — ':'')+d+'</span>'
-        +'<button onclick="loadDay(\"'+d+'\")" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555">Yükle</button>'
+        +'<div style="display:flex;gap:4px">'
+      +'<button onclick="loadDay(\"'+d+'\")" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555">Yükle</button>'
+      +'<button onclick="deleteDay(\"'+d+'\")" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ffcdd2;background:#fff;cursor:pointer;color:#c0392b">Sil</button>'
+      +'</div>'
         +'</div>'
         // Kalori ve protein progress
         +'<div style="font-size:11px;color:#888;margin-bottom:2px">Kalori: '+Math.round(totals.cal)+'/'+g.calories+' ('+calPct+'%)</div>'
@@ -1657,6 +1660,12 @@ function renderHistory(){
 
 function switchHistoryAp(i){
   historyAp=i;
+  renderHistory();
+}
+
+function deleteDay(dateStr){
+  if(!confirm(dateStr+' tarihli kayıt silinsin mi?')) return;
+  localStorage.removeItem('besin_'+dateStr);
   renderHistory();
 }
 
