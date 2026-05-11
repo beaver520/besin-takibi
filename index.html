@@ -354,6 +354,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   </div>
 
+  <!-- GEÇMİŞ -->
+  <div class="card" style="margin-top:4px">
+    <div class="card-title">📅 Geçmiş Günler</div>
+    <div id="historyList"><div style="font-size:13px;color:#aaa">Yükleniyor...</div></div>
+  </div>
+
   <!-- AYARLAR -->
   <div class="card" style="margin-top:4px">
     <div class="card-title">⚙️ Google Sheets Bağlantısı</div>
@@ -752,11 +758,85 @@ Object.assign(workouts,{
 // ── STATE ─────────────────────────────────────────────────────────
 let ap=0;
 let pendingFood=null;
+
+// ── localStorage YARDIMCI FONKSİYONLAR ───────────────────────────
+const TODAY = new Date().toLocaleDateString('tr-TR'); // "11.05.2026"
+
+function saveToStorage(){
+  const key = 'besin_'+TODAY;
+  const data = {
+    state: {
+      foods: state.foods,
+      supps: state.supps,
+      exChecks: state.exChecks,
+    },
+    daily: {
+      water: daily.water,
+      tea: daily.tea,
+      coffee: daily.coffee,
+      cigarette: daily.cigarette,
+      sugar: daily.sugar,
+    },
+    savedAt: new Date().toISOString()
+  };
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch(e){}
+}
+
+function loadFromStorage(dateStr){
+  try {
+    const raw = localStorage.getItem('besin_'+dateStr);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  } catch(e){ return null; }
+}
+
+function loadToday(){
+  const saved = loadFromStorage(TODAY);
+  if(!saved) return;
+  // Restore state
+  if(saved.state){
+    if(saved.state.foods) Object.assign(state.foods, saved.state.foods);
+    if(saved.state.supps) Object.assign(state.supps, saved.state.supps);
+    if(saved.state.exChecks) Object.assign(state.exChecks, saved.state.exChecks);
+  }
+  if(saved.daily){
+    if(saved.daily.water) Object.assign(daily.water, saved.daily.water);
+    if(saved.daily.tea) Object.assign(daily.tea, saved.daily.tea);
+    if(saved.daily.coffee) Object.assign(daily.coffee, saved.daily.coffee);
+    if(saved.daily.cigarette) Object.assign(daily.cigarette, saved.daily.cigarette);
+    if(saved.daily.sugar) Object.assign(daily.sugar, saved.daily.sugar);
+  }
+}
+
+function getArchivedDays(){
+  const days = [];
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(key && key.startsWith('besin_')){
+      days.push(key.replace('besin_',''));
+    }
+  }
+  return days.sort((a,b)=>{
+    const pa=a.split('.').reverse().join('');
+    const pb=b.split('.').reverse().join('');
+    return pb.localeCompare(pa);
+  });
+}
+
 const state={
   foods:{0:[],1:[],2:[]},
   supps:{0:{},1:{},2:{}},
   exChecks:{0:{},1:{},2:{}},
   exDay:new Date().getDay()===0?6:new Date().getDay()-1,
+};
+
+// ── GÜNLÜK TAKİP VERİSİ ──────────────────────────────────────────
+const daily = {
+  water: {0:0, 1:0, 2:0},
+  tea:   {0:0, 1:0, 2:0},
+  coffee:{0:0, 1:0, 2:0},
+  cigarette:{0:0, 1:0, 2:0},
+  sugar: {0:[], 1:[], 2:[]},
 };
 
 // ── RENDER ────────────────────────────────────────────────────────
@@ -913,7 +993,7 @@ function confirmAdd(){
   if(!toplamGram||toplamGram<=0){alert('Gram veya adet giriniz');return;}
   state.foods[ap].push({data:f, gram:toplamGram, adet:adet||null, birimGram:birimGram});
   closeModal();
-  renderFoods();renderMetrics();
+  renderFoods();renderMetrics();autoSave();
 }
 document.getElementById('gramModal').addEventListener('click',function(e){
   if(e.target===this)closeModal();
@@ -939,7 +1019,7 @@ function addManual(){
   renderFoods();renderMetrics();
 }
 
-function delFood(i){state.foods[ap].splice(i,1);renderFoods();renderMetrics();}
+function delFood(i){state.foods[ap].splice(i,1);renderFoods();renderMetrics();autoSave();}
 
 // SUPPLEMENTS
 function renderSupps(){
@@ -948,7 +1028,7 @@ function renderSupps(){
     `<span class="stag ${s.type==='med'?'med':''} ${taken[s.name]?'on':''}" onclick="toggleSupp('${s.name}')">${s.name}</span>`
   ).join('');
 }
-function toggleSupp(n){state.supps[ap][n]=!state.supps[ap][n];renderSupps();}
+function toggleSupp(n){state.supps[ap][n]=!state.supps[ap][n];renderSupps();autoSave();}
 
 // EXERCISE
 function renderExercise(){
@@ -1001,24 +1081,47 @@ function testConnection(){
 }
 
 function saveDay(){
+  // 1. localStorage'a kaydet (her zaman)
+  saveToStorage();
+
+  // 2. Google Sheets'e gönder (URL varsa)
   const url=localStorage.getItem('scriptUrl')||'';
-  if(!url){alert("⚠️ Önce Google Sheets URL'ini gir");return;}
   const p=profiles[ap],t=getTotals(),g=p.goals;
   const foods=state.foods[ap].map(f=>f.data.n).join(', ')||'yok';
   const takviyeler=Object.keys(state.supps[ap]).filter(k=>state.supps[ap][k]).join(', ')||'yok';
-  const today=new Date().toLocaleDateString('tr-TR');
-  const payload={profil:p.label,tarih:today,kalori:Math.round(t.cal),protein:Math.round(t.p),
-    karb:Math.round(t.c),yag:Math.round(t.f),besinler:foods,takviyeler:takviyeler,
-    proteinHedef:g.protein,notlar:''};
+  const payload={
+    profil:p.label, tarih:TODAY,
+    kalori:Math.round(t.cal), protein:Math.round(t.p),
+    karb:Math.round(t.c), yag:Math.round(t.f),
+    besinler:foods, takviyeler:takviyeler,
+    su:daily.water[ap]||0, cay:daily.tea[ap]||0,
+    kahve:daily.coffee[ap]||0, sigara:daily.cigarette[ap]||0,
+    proteinHedef:g.protein, notlar:''
+  };
   const btn=document.querySelectorAll('.save-btn')[0];
   btn.textContent='🔄 Kaydediliyor...';
-  fetch(url,{method:'POST',body:JSON.stringify(payload)})
-    .then(r=>r.json())
-    .then(d=>{
-      if(d.success){btn.textContent='✅ Kaydedildi!';setTimeout(()=>btn.textContent="💾 Sheets'e Kaydet",2500);}
-      else{alert('Hata: '+d.hata);btn.textContent="💾 Sheets'e Kaydet";}
-    })
-    .catch(()=>{alert('Bağlantı hatası.');btn.textContent="💾 Sheets'e Kaydet";});
+
+  if(url){
+    fetch(url,{method:'POST',body:JSON.stringify(payload)})
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.success){
+          btn.textContent='✅ Kaydedildi!';
+          setTimeout(()=>btn.textContent="💾 Günü Kaydet",2500);
+        } else {
+          btn.textContent='✅ Yerel kaydedildi';
+          setTimeout(()=>btn.textContent="💾 Günü Kaydet",2500);
+        }
+      })
+      .catch(()=>{
+        btn.textContent='✅ Yerel kaydedildi';
+        setTimeout(()=>btn.textContent="💾 Günü Kaydet",2500);
+      });
+  } else {
+    btn.textContent='✅ Kaydedildi!';
+    setTimeout(()=>btn.textContent="💾 Günü Kaydet",2500);
+  }
+  renderHistory();
 }
 
 function copyAndEval(){
@@ -1038,27 +1141,107 @@ function copyAndEval(){
 window.addEventListener('load',()=>{
   const saved=localStorage.getItem('scriptUrl')||'';
   if(saved)document.getElementById('scriptUrl').value=saved;
+  loadToday();
+  render();
+  renderHistory();
 });
-// ── GÜNLÜK TAKİP ─────────────────────────────────────────────────
-const daily = {
-  water: {0:0, 1:0, 2:0},
-  tea:   {0:0, 1:0, 2:0},
-  coffee:{0:0, 1:0, 2:0},
-  cigarette:{0:0, 1:0, 2:0},
-  sugar: {0:[], 1:[], 2:[]},
-};
+
+// OTOMATİK KAYDET - her değişiklikte
+function autoSave(){ saveToStorage(); }
+
+let historyAp = 0; // geçmiş için aktif profil
+
+function renderHistory(){
+  const el=document.getElementById('historyList');
+  if(!el) return;
+
+  // Profil tabları
+  const tabsHtml = profiles.map((p,i)=>
+    '<button onclick="switchHistoryAp('+i+')" style="padding:5px 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid '+(i===historyAp?'#1a1a1a':'#ddd')+';background:'+(i===historyAp?'#1a1a1a':'#fff')+';color:'+(i===historyAp?'#fff':'#666')+';margin-right:4px">'+p.label+'</button>'
+  ).join('');
+
+  const days=getArchivedDays();
+  let daysHtml = '';
+  if(!days.length){
+    daysHtml='<div style="font-size:13px;color:#aaa;padding:8px 0">Henüz kayıtlı gün yok.<br>Günü Kaydet butonunu kullan.</div>';
+  } else {
+    daysHtml=days.map(d=>{
+      const saved=loadFromStorage(d);
+      if(!saved) return '';
+      const foods=(saved.state&&saved.state.foods&&saved.state.foods[historyAp])||[];
+      const totals=foods.reduce((a,f)=>{
+        const m=(f.gram||100)/100;
+        a.cal+=(f.data.cal||0)*m; a.p+=(f.data.p||0)*m;
+        a.c+=(f.data.c||0)*m; a.f+=(f.data.f||0)*m; return a;
+      },{cal:0,p:0,c:0,f:0});
+      const water=(saved.daily&&saved.daily.water&&saved.daily.water[historyAp])||0;
+      const cig=(saved.daily&&saved.daily.cigarette&&saved.daily.cigarette[historyAp])||0;
+      const tea=(saved.daily&&saved.daily.tea&&saved.daily.tea[historyAp])||0;
+      const coffee=(saved.daily&&saved.daily.coffee&&saved.daily.coffee[historyAp])||0;
+      const isToday=d===TODAY;
+      const g=profiles[historyAp].goals;
+      const protPct=Math.min(100,Math.round((totals.p/g.protein)*100));
+      const calPct=Math.min(100,Math.round((totals.cal/g.calories)*100));
+      return '<div style="background:'+(isToday?'#f0f8ff':'#f9f9f9')+';border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1.5px solid '+(isToday?'#aed6f1':'#eee')+'">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+        +'<span style="font-weight:600;font-size:14px;color:#1a1a1a">'+(isToday?'📌 Bugün — ':'')+d+'</span>'
+        +'<button onclick="loadDay(''+d+'')" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555">Yükle</button>'
+        +'</div>'
+        // Kalori ve protein progress
+        +'<div style="font-size:11px;color:#888;margin-bottom:2px">Kalori: '+Math.round(totals.cal)+'/'+g.calories+' ('+calPct+'%)</div>'
+        +'<div style="height:4px;background:#eee;border-radius:999px;margin-bottom:6px"><div style="height:100%;width:'+calPct+'%;background:#c0392b;border-radius:999px"></div></div>'
+        +'<div style="font-size:11px;color:#888;margin-bottom:2px">Protein: '+Math.round(totals.p)+'g/'+g.protein+'g ('+protPct+'%)</div>'
+        +'<div style="height:4px;background:#eee;border-radius:999px;margin-bottom:8px"><div style="height:100%;width:'+protPct+'%;background:#1a5276;border-radius:999px"></div></div>'
+        // Özet satırı
+        +'<div style="display:flex;gap:10px;font-size:12px;color:#666;flex-wrap:wrap">'
+        +(water>0?'<span>💧 '+(water>=1000?(water/1000).toFixed(1)+'L':water+'ml')+'</span>':'')
+        +(tea>0?'<span>🫖 '+tea+' çay</span>':'')
+        +(coffee>0?'<span>☕ '+coffee+' kahve</span>':'')
+        +(cig>0?'<span>🚬 '+cig+' sigara</span>':'')
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  el.innerHTML = '<div style="margin-bottom:10px">'+tabsHtml+'</div>' + daysHtml;
+}
+
+function switchHistoryAp(i){
+  historyAp=i;
+  renderHistory();
+}
+
+function loadDay(dateStr){
+  const saved=loadFromStorage(dateStr);
+  if(!saved){alert('Bu güne ait veri bulunamadı');return;}
+  if(saved.state){
+    if(saved.state.foods) Object.assign(state.foods,saved.state.foods);
+    if(saved.state.supps) Object.assign(state.supps,saved.state.supps);
+    if(saved.state.exChecks) Object.assign(state.exChecks,saved.state.exChecks);
+  }
+  if(saved.daily){
+    if(saved.daily.water) Object.assign(daily.water,saved.daily.water);
+    if(saved.daily.tea) Object.assign(daily.tea,saved.daily.tea);
+    if(saved.daily.coffee) Object.assign(daily.coffee,saved.daily.coffee);
+    if(saved.daily.cigarette) Object.assign(daily.cigarette,saved.daily.cigarette);
+    if(saved.daily.sugar) Object.assign(daily.sugar,saved.daily.sugar);
+  }
+  render();
+  alert(dateStr+' tarihi yüklendi.');
+}
+// ── GÜNLÜK TAKİP FONKSİYONLARI ──
 
 function addWater(ml){
   daily.water[ap] = Math.max(0, (daily.water[ap]||0) + ml);
-  renderDaily();
+  renderDaily();autoSave();
 }
 function addDrink(type, n){
   daily[type][ap] = Math.max(0, (daily[type][ap]||0) + n);
-  renderDaily();
+  renderDaily();autoSave();
 }
 function addCigarette(n){
   daily.cigarette[ap] = Math.max(0, (daily.cigarette[ap]||0) + n);
-  renderDaily();
+  renderDaily();autoSave();
 }
 function saveSugar(){
   const fasting = document.getElementById('sugarFasting').value;
@@ -1114,6 +1297,7 @@ const _origRender = render;
 function render(){
   _origRender();
   renderDaily();
+  if(typeof renderHistory==='function') renderHistory();
 }
 
 render();
