@@ -182,7 +182,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <span style="font-size:13px;color:#888;white-space:nowrap">📅 Tarih:</span>
     <input type="date" id="datePicker"
       style="flex:1;border:none;font-size:14px;color:#1a1a1a;outline:none;background:transparent"
-      onchange="changeDate(this.value)" />
+      onchange="if(typeof changeDate==='function')changeDate(this.value)" />
     <button onclick="changeDate('today')" style="padding:5px 12px;border-radius:8px;border:1.5px solid #ddd;background:#f9f9f9;font-size:12px;cursor:pointer;color:#555;white-space:nowrap">Bugün</button>
   </div>
 
@@ -415,6 +415,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
+function changeDate(val){
+  if(val==='today'){
+    SELECTED_DATE = TODAY;
+    // Picker'ı bugüne ayarla
+    const dp = document.getElementById('datePicker');
+    if(dp){ const now=new Date(); dp.value=now.toISOString().split('T')[0]; }
+  } else {
+    const parts = val.split('-');
+    SELECTED_DATE = parts[2]+'.'+parts[1]+'.'+parts[0];
+  }
+  loadDate(SELECTED_DATE);
+  _fullRender();
+}
+
 // ── GIDA VERİTABANI ──────────────────────────────────────────────
 const FOODS=[
   {n:"Tavuk göğsü (haşlama)",cal:165,p:31,c:0,f:3.6},
@@ -1560,19 +1574,7 @@ function copyAndEval(){
   navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>alert('✅ Panoya kopyalandı! Buraya yapıştır.'));
 }
 
-function changeDate(val){
-  if(val==='today'){
-    SELECTED_DATE = TODAY;
-    // Picker'ı bugüne ayarla
-    const dp = document.getElementById('datePicker');
-    if(dp){ const now=new Date(); dp.value=now.toISOString().split('T')[0]; }
-  } else {
-    const parts = val.split('-');
-    SELECTED_DATE = parts[2]+'.'+parts[1]+'.'+parts[0];
-  }
-  loadDate(SELECTED_DATE);
-  _fullRender();
-}
+
 
 window.addEventListener('load',()=>{
   const saved=localStorage.getItem('scriptUrl')||'';
