@@ -1983,8 +1983,11 @@ function deleteLabResults(dateStr){
 }
 
 window.addEventListener('load',()=>{
-  const saved=localStorage.getItem('scriptUrl')||'';
-  if(saved)document.getElementById('scriptUrl').value=saved;
+  // Varsayılan Apps Script URL
+  const defaultUrl = 'https://script.google.com/macros/s/AKfycbwXVV-lgpeD0hPfjGf5dmek92JxZ9F7ueD3_uvinR1RTIgXbZlPGPed-okcEkELcQm8uQ/exec';
+  if(!localStorage.getItem('scriptUrl')) localStorage.setItem('scriptUrl', defaultUrl);
+  const saved=localStorage.getItem('scriptUrl')||defaultUrl;
+  document.getElementById('scriptUrl').value=saved;
   // Tarih seçiciyi bugüne ayarla
   const dp = document.getElementById('datePicker');
   if(dp){
