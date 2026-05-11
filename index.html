@@ -1106,10 +1106,18 @@ function loadFromStorage(dateStr){
   } catch(e){ return null; }
 }
 
-function loadToday(){
-  const saved = loadFromStorage(TODAY);
+function loadDate(dateStr){
+  const saved = loadFromStorage(dateStr);
+  // State'i sıfırla
+  state.foods = {0:[],1:[],2:[]};
+  state.supps = {0:{},1:{},2:{}};
+  state.exChecks = {0:{},1:{},2:{}};
+  daily.water={0:0,1:0,2:0};
+  daily.tea={0:0,1:0,2:0};
+  daily.coffee={0:0,1:0,2:0};
+  daily.cigarette={0:0,1:0,2:0};
+  daily.sugar={0:[],1:[],2:[]};
   if(!saved) return;
-  // Restore state
   if(saved.state){
     if(saved.state.foods) Object.assign(state.foods, saved.state.foods);
     if(saved.state.supps) Object.assign(state.supps, saved.state.supps);
@@ -1122,6 +1130,10 @@ function loadToday(){
     if(saved.daily.cigarette) Object.assign(daily.cigarette, saved.daily.cigarette);
     if(saved.daily.sugar) Object.assign(daily.sugar, saved.daily.sugar);
   }
+}
+
+function loadToday(){
+  loadDate(TODAY);
 }
 
 function getArchivedDays(){
@@ -1537,4 +1549,191 @@ function saveDay(){
 function copyAndEval(){
   const p=profiles[ap],t=getTotals(),g=p.goals;
   const foods=state.foods[ap].map(f=>f.data.n).join(', ')||'yok';
-  const txt=p.label+' için bugünkü özet
+  const txt=p.label+' için bugünkü özet:\n'+
+    'Kalori: '+Math.round(t.cal)+'/'+g.calories+' kal\n'+
+    'Protein: '+Math.round(t.p)+'g / '+g.protein+'g\n'+
+    'Karbonhidrat: '+Math.round(t.c)+'g / '+g.carbs+'g\n'+
+    'Yağ: '+Math.round(t.f)+'g / '+g.fat+'g\n'+
+    'Yenilen besinler: '+foods+'\n'+
+    'Profil: '+p.meta+'\n\n'+
+    'Bu rakamlara göre günü değerlendir. Eksik/fazla makrolar için somut öneri ver.';
+  navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>alert('✅ Panoya kopyalandı! Buraya yapıştır.'));
+}
+
+function changeDate(val){
+  if(val==='today'){
+    SELECTED_DATE = TODAY;
+    // Picker'ı bugüne ayarla
+    const dp = document.getElementById('datePicker');
+    if(dp){ const now=new Date(); dp.value=now.toISOString().split('T')[0]; }
+  } else {
+    const parts = val.split('-');
+    SELECTED_DATE = parts[2]+'.'+parts[1]+'.'+parts[0];
+  }
+  loadDate(SELECTED_DATE);
+  _fullRender();
+}
+
+window.addEventListener('load',()=>{
+  const saved=localStorage.getItem('scriptUrl')||'';
+  if(saved)document.getElementById('scriptUrl').value=saved;
+  // Tarih seçiciyi bugüne ayarla
+  const dp = document.getElementById('datePicker');
+  if(dp){
+    const now = new Date();
+    dp.value = now.toISOString().split('T')[0];
+  }
+  loadDate(SELECTED_DATE);
+  _fullRender();
+});
+
+function _fullRender(){
+  render();
+  renderDaily();
+  renderHistory();
+}
+
+// OTOMATİK KAYDET - her değişiklikte
+function autoSave(){ saveToStorage(); }
+
+let historyAp = 0; // geçmiş için aktif profil
+
+function renderHistory(){
+  const el=document.getElementById('historyList');
+  if(!el) return;
+
+  // Profil tabları
+  const tabsHtml = profiles.map((p,i)=>
+    '<button onclick="switchHistoryAp('+i+')" style="padding:5px 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid '+(i===historyAp?'#1a1a1a':'#ddd')+';background:'+(i===historyAp?'#1a1a1a':'#fff')+';color:'+(i===historyAp?'#fff':'#666')+';margin-right:4px">'+p.label+'</button>'
+  ).join('');
+
+  const days=getArchivedDays();
+  let daysHtml = '';
+  if(!days.length){
+    daysHtml='<div style="font-size:13px;color:#aaa;padding:8px 0">Henüz kayıtlı gün yok.<br>Günü Kaydet butonunu kullan.</div>';
+  } else {
+    daysHtml=days.map(d=>{
+      const saved=loadFromStorage(d);
+      if(!saved) return '';
+      const foods=(saved.state&&saved.state.foods&&saved.state.foods[historyAp])||[];
+      const totals=foods.reduce((a,f)=>{
+        const m=(f.gram||100)/100;
+        a.cal+=(f.data.cal||0)*m; a.p+=(f.data.p||0)*m;
+        a.c+=(f.data.c||0)*m; a.f+=(f.data.f||0)*m; return a;
+      },{cal:0,p:0,c:0,f:0});
+      const water=(saved.daily&&saved.daily.water&&saved.daily.water[historyAp])||0;
+      const cig=(saved.daily&&saved.daily.cigarette&&saved.daily.cigarette[historyAp])||0;
+      const tea=(saved.daily&&saved.daily.tea&&saved.daily.tea[historyAp])||0;
+      const coffee=(saved.daily&&saved.daily.coffee&&saved.daily.coffee[historyAp])||0;
+      const isToday=d===TODAY;
+      const g=profiles[historyAp].goals;
+      const protPct=Math.min(100,Math.round((totals.p/g.protein)*100));
+      const calPct=Math.min(100,Math.round((totals.cal/g.calories)*100));
+      return '<div style="background:'+(isToday?'#f0f8ff':'#f9f9f9')+';border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1.5px solid '+(isToday?'#aed6f1':'#eee')+'">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+        +'<span style="font-weight:600;font-size:14px;color:#1a1a1a">'+(isToday?'📌 Bugün — ':'')+d+'</span>'
+        +'<button onclick="loadDay(\"'+d+'\")" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555">Yükle</button>'
+        +'</div>'
+        // Kalori ve protein progress
+        +'<div style="font-size:11px;color:#888;margin-bottom:2px">Kalori: '+Math.round(totals.cal)+'/'+g.calories+' ('+calPct+'%)</div>'
+        +'<div style="height:4px;background:#eee;border-radius:999px;margin-bottom:6px"><div style="height:100%;width:'+calPct+'%;background:#c0392b;border-radius:999px"></div></div>'
+        +'<div style="font-size:11px;color:#888;margin-bottom:2px">Protein: '+Math.round(totals.p)+'g/'+g.protein+'g ('+protPct+'%)</div>'
+        +'<div style="height:4px;background:#eee;border-radius:999px;margin-bottom:8px"><div style="height:100%;width:'+protPct+'%;background:#1a5276;border-radius:999px"></div></div>'
+        // Özet satırı
+        +'<div style="display:flex;gap:10px;font-size:12px;color:#666;flex-wrap:wrap">'
+        +(water>0?'<span>💧 '+(water>=1000?(water/1000).toFixed(1)+'L':water+'ml')+'</span>':'')
+        +(tea>0?'<span>🫖 '+tea+' çay</span>':'')
+        +(coffee>0?'<span>☕ '+coffee+' kahve</span>':'')
+        +(cig>0?'<span>🚬 '+cig+' sigara</span>':'')
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  el.innerHTML = '<div style="margin-bottom:10px">'+tabsHtml+'</div>' + daysHtml;
+}
+
+function switchHistoryAp(i){
+  historyAp=i;
+  renderHistory();
+}
+
+function loadDay(dateStr){
+  // Tarihi seçici ile de güncelle
+  SELECTED_DATE = dateStr;
+  const parts = dateStr.split('.');
+  if(parts.length===3){
+    const dp = document.getElementById('datePicker');
+    if(dp) dp.value = parts[2]+'-'+parts[1]+'-'+parts[0];
+  }
+  loadDate(dateStr);
+  _fullRender();
+}
+// ── GÜNLÜK TAKİP FONKSİYONLARI ──
+
+function addWater(ml){
+  daily.water[ap] = Math.max(0, (daily.water[ap]||0) + ml);
+  renderDaily();autoSave();
+}
+function addDrink(type, n){
+  daily[type][ap] = Math.max(0, (daily[type][ap]||0) + n);
+  renderDaily();autoSave();
+}
+function addCigarette(n){
+  daily.cigarette[ap] = Math.max(0, (daily.cigarette[ap]||0) + n);
+  renderDaily();autoSave();
+}
+function saveSugar(){
+  const fasting = document.getElementById('sugarFasting').value;
+  const postmeal = document.getElementById('sugarPostmeal').value;
+  if(!fasting && !postmeal){ alert('En az bir değer girin'); return; }
+  const now = new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  daily.sugar[ap].push({fasting: fasting||'—', postmeal: postmeal||'—', time: now});
+  document.getElementById('sugarFasting').value='';
+  document.getElementById('sugarPostmeal').value='';
+  renderDaily();
+}
+
+function renderDaily(){
+  const water = daily.water[ap]||0;
+  const goal = 3000;
+  const pct = Math.min(100, Math.round(water/goal*100));
+  document.getElementById('waterDisplay').textContent = water >= 1000 ? (water/1000).toFixed(1)+'L' : water+'ml';
+  document.getElementById('waterPct').textContent = pct+'%';
+  document.getElementById('waterBar').style.width = pct+'%';
+
+  document.getElementById('teaCount').textContent = daily.tea[ap]||0;
+  document.getElementById('coffeeCount').textContent = daily.coffee[ap]||0;
+
+  const cig = daily.cigarette[ap]||0;
+  document.getElementById('cigaretteCount').textContent = cig;
+  const notes = ['Bugün hiç içmedin 💪','1 tane — az ama var 🙁','2 tane — dikkat et ⚠️','3+ tane — düşün bir 🚨'];
+  document.getElementById('cigaretteNote').textContent = cig===0?notes[0]:cig===1?notes[1]:cig===2?notes[2]:cig+' adet — azaltmayı dene 🚨';
+  document.getElementById('cigaretteNote').style.color = cig===0?'#2d6a4f':cig<=2?'#d35400':'#c0392b';
+
+  // Şeker kartı sadece İsmail'de (ap===1)
+  const sugarCard = document.getElementById('sugarCard');
+  sugarCard.style.display = profiles[ap].isAnne ? 'block' : 'none';
+
+  if(profiles[ap].isAnne){
+    const history = daily.sugar[ap]||[];
+    const el = document.getElementById('sugarHistory');
+    if(!history.length){ el.innerHTML='<div style="font-size:12px;color:#aaa">Henüz ölçüm yok</div>'; return; }
+    el.innerHTML = '<div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:600">BUGÜNKÜ ÖLÇÜMLER</div>' +
+      history.map(h=>{
+        const fColor = h.fasting!=='—' ? (parseInt(h.fasting)<=100?'#2d6a4f':parseInt(h.fasting)<=125?'#d35400':'#c0392b') : '#aaa';
+        const pColor = h.postmeal!=='—' ? (parseInt(h.postmeal)<=140?'#2d6a4f':parseInt(h.postmeal)<=199?'#d35400':'#c0392b') : '#aaa';
+        return '<div style="display:flex;gap:10px;align-items:center;padding:8px;background:#f9f9f9;border-radius:8px;margin-bottom:6px;font-size:13px">'
+          +'<span style="color:#aaa;font-size:11px">'+h.time+'</span>'
+          +'<span>Açlık: <b style="color:'+fColor+'">'+h.fasting+'</b></span>'
+          +'<span>Tokluk: <b style="color:'+pColor+'">'+h.postmeal+'</b></span>'
+          +'</div>';
+      }).join('');
+  }
+}
+
+// Override render to also call renderDaily
+// render çağrıları _fullRender üzerinden yapılıyor
+</script>
+</body>
+</html>
