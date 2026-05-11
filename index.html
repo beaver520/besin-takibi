@@ -178,15 +178,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 
   <!-- TARİH SEÇİCİ -->
-  <div style="display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:12px;border:1px solid #e0e0e0">
-    <span style="font-size:13px;color:#888;flex-shrink:0">📅 Tarih:</span>
-    <input type="date" id="datePicker"
-      style="flex:1;border:none;font-size:14px;color:#1a1a1a;outline:none;background:transparent"
-      onchange="changeDate(this.value)" />
-    <button onclick="changeDate('today')" style="padding:5px 12px;border-radius:8px;border:1.5px solid #ddd;background:#f9f9f9;font-size:12px;cursor:pointer;color:#555">Bugün</button>
-  </div>
-
-  <!-- TARİH SEÇİCİ -->
   <div style="display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:12px;border:1px solid #e0e0e0">
     <span style="font-size:13px;color:#888;white-space:nowrap">📅 Tarih:</span>
     <input type="date" id="datePicker"
@@ -776,6 +767,100 @@ const FOODS=[
   {n:"Biber dolması (etli)",cal:150,p:8,c:14,f:7},
   {n:"Kaburga dolması",cal:310,p:22,c:15,f:18},
   {n:"Patlıcan oturtma",cal:180,p:10,c:10,f:11},
+  // SEBZE & OT EKSİKLERİ
+  {n:"Yeşil soğan (1 sap ~10g)",cal:32,p:1.8,c:7.3,f:0.2,birim:10},
+  {n:"Taze soğan demeti (~100g)",cal:32,p:1.8,c:7.3,f:0.2},
+  {n:"Dereotu (1 demet ~30g)",cal:43,p:3.5,c:7,f:1.1,birim:30},
+  {n:"Maydanoz (1 demet ~30g)",cal:36,p:3,c:6.3,f:0.8,birim:30},
+  {n:"Nane (1 demet ~20g)",cal:70,p:3.8,c:14,f:0.9,birim:20},
+  {n:"Fesleğen (1 demet ~15g)",cal:23,p:3.2,c:2.7,f:0.6,birim:15},
+  {n:"Kişniş (1 demet ~15g)",cal:23,p:2.1,c:3.7,f:0.5,birim:15},
+  {n:"Tarhun (taze, 1 demet ~10g)",cal:295,p:23,c:50,f:7,birim:10},
+  {n:"Kuşburnu",cal:162,p:1.6,c:38,f:0.3},
+  {n:"Isırgan otu",cal:42,p:2.7,c:7,f:0.1},
+  {n:"Ebegümeci",cal:31,p:2.8,c:6.7,f:0.1},
+  {n:"Hindiba",cal:23,p:1.7,c:4.7,f:0.3},
+  {n:"Hardal yaprağı",cal:27,p:2.9,c:4.7,f:0.4},
+  {n:"Turp (kırmızı, 1 adet ~10g)",cal:16,p:0.7,c:3.4,f:0.1,birim:10},
+  {n:"Turp (beyaz/daikon)",cal:18,p:0.6,c:4.1,f:0.1},
+  {n:"Kereviz (sap, 1 çubuk ~40g)",cal:16,p:0.7,c:3,f:0.2,birim:40},
+  {n:"Pancar (haşlama)",cal:44,p:1.7,c:10,f:0.2},
+  {n:"Brokoli filizi",cal:35,p:2.4,c:7,f:0.4},
+  {n:"Bezelye filizi",cal:86,p:5.4,c:15,f:0.5},
+  {n:"Bamya (taze)",cal:33,p:2,c:7.5,f:0.2},
+  {n:"Taze fasulye",cal:31,p:1.8,c:7,f:0.1},
+  {n:"Taze bakla",cal:88,p:8,c:15,f:0.5},
+  {n:"Taze barbunya",cal:127,p:8,c:23,f:0.5},
+  {n:"Sivri biber (1 adet ~30g)",cal:20,p:0.9,c:4.6,f:0.2,birim:30},
+  {n:"Dolmalık biber (1 adet ~150g)",cal:31,p:1,c:7,f:0.3,birim:150},
+  {n:"Acı biber (1 adet ~15g)",cal:40,p:2,c:8,f:0.4,birim:15},
+  {n:"Sarı biber (1 adet ~120g)",cal:27,p:1,c:6.3,f:0.2,birim:120},
+  {n:"Cherry domates (1 adet ~15g)",cal:18,p:0.9,c:3.9,f:0.2,birim:15},
+  {n:"Kuru soğan (1 orta ~100g)",cal:40,p:1.1,c:9.3,f:0.1,birim:100},
+  {n:"Arpacık soğan (1 adet ~10g)",cal:40,p:1.1,c:9.3,f:0.1,birim:10},
+  // MEYVE SUYU & İÇECEK EKSİKLERİ
+  {n:"Mandalina suyu (taze)",cal:43,p:0.7,c:10,f:0.3},
+  {n:"Mandalina suyu (200ml)",cal:43,p:0.7,c:10,f:0.3,birim:200},
+  {n:"Üzüm suyu (taze)",cal:60,p:0.5,c:15,f:0.1},
+  {n:"Kiraz suyu (taze)",cal:51,p:0.9,c:12,f:0.3},
+  {n:"Vişne suyu (taze)",cal:47,p:1,c:11,f:0.3},
+  {n:"Erik suyu",cal:46,p:0.4,c:11,f:0.1},
+  {n:"Domates suyu (taze)",cal:17,p:0.9,c:4,f:0.1},
+  {n:"Havuç suyu (taze)",cal:40,p:0.9,c:9.3,f:0.2},
+  {n:"Pancar suyu",cal:44,p:1.7,c:10,f:0.2},
+  {n:"Kereviz suyu",cal:16,p:0.7,c:3,f:0.2},
+  {n:"Zencefil çayı",cal:5,p:0,c:1.2,f:0},
+  {n:"Zerdeçal sütü (altın süt, 200ml)",cal:95,p:3.5,c:10,f:4.5,birim:200},
+  {n:"Bone broth (kemik suyu)",cal:31,p:6,c:0,f:0.5},
+  {n:"Salep (200ml)",cal:150,p:3,c:30,f:2,birim:200},
+  {n:"Boza (200ml)",cal:87,p:2.5,c:19,f:0.3,birim:200},
+  {n:"Şalgam suyu (200ml)",cal:16,p:0.8,c:3.5,f:0.1,birim:200},
+  {n:"Limonata (ev yapımı, 200ml)",cal:40,p:0.2,c:10,f:0,birim:200},
+  // TÜRK KAHVALTISI EKSİKLERİ
+  {n:"Tahin",cal:595,p:17,c:21,f:54},
+  {n:"Tahin pekmez (karışık, 1 kaşık ~20g)",cal:130,p:2,c:19,f:5.5,birim:20},
+  {n:"Çeçil peyniri",cal:215,p:24,c:1,f:13},
+  {n:"Örgü peyniri",cal:250,p:22,c:1,f:17},
+  {n:"Van otlu peyniri",cal:270,p:19,c:1,f:21},
+  {n:"Erzincan tulum peyniri",cal:355,p:23,c:1,f:28},
+  {n:"Urfa peyniri",cal:260,p:18,c:1,f:20},
+  {n:"Çökelek (taze)",cal:65,p:12,c:2,f:1},
+  {n:"Hellim (ızgara)",cal:321,p:21,c:0.5,f:26},
+  {n:"Yumurta (çılbır, 2 adet)",cal:190,p:13,c:3,f:14},
+  {n:"Menemen (yumurtalı, 2 adet)",cal:185,p:11,c:8,f:12},
+  {n:"Simit (1 adet ~130g)",cal:295,p:9,c:56,f:4,birim:130},
+  {n:"Poğaça (peynirli, 1 adet ~80g)",cal:280,p:9,c:35,f:12,birim:80},
+  {n:"Börek (sigara, 1 adet ~40g)",cal:160,p:5,c:18,f:8,birim:40},
+  {n:"Açma (1 adet ~90g)",cal:340,p:8,c:48,f:14,birim:90},
+  {n:"Kandil simidi (1 adet ~80g)",cal:310,p:9,c:57,f:6,birim:80},
+  // TÜRK TATLILARI & ATIŞTIRILMAKLAR
+  {n:"Lokum (1 adet ~15g)",cal:322,p:0.4,c:80,f:0.1,birim:15},
+  {n:"Baklava (1 dilim ~60g)",cal:447,p:7,c:52,f:24,birim:60},
+  {n:"Kadayıf (1 porsiyon ~100g)",cal:280,p:5,c:48,f:8,birim:100},
+  {n:"Künefe (1 porsiyon ~150g)",cal:380,p:9,c:42,f:20,birim:150},
+  {n:"Revani (1 dilim ~80g)",cal:290,p:4,c:50,f:9,birim:80},
+  {n:"Şekerpare (1 adet ~50g)",cal:220,p:3,c:32,f:10,birim:50},
+  {n:"Tulumba tatlısı (1 adet ~30g)",cal:140,p:2,c:20,f:6,birim:30},
+  {n:"Kazandibi (1 porsiyon ~100g)",cal:160,p:4.5,c:28,f:4,birim:100},
+  {n:"Kemal paşa (1 adet ~60g)",cal:200,p:4,c:30,f:8,birim:60},
+  {n:"Helva (tahin, 1 porsiyon ~30g)",cal:155,p:4,c:16,f:9,birim:30},
+  {n:"Helva (irmik, 1 porsiyon ~100g)",cal:220,p:4,c:36,f:7,birim:100},
+  {n:"Aşure (1 kase ~200g)",cal:165,p:4,c:36,f:1.5,birim:200},
+  {n:"Güllaç (1 porsiyon ~150g)",cal:180,p:5,c:35,f:3,birim:150},
+  {n:"Leblebi (1 avuç ~30g)",cal:354,p:17,c:58,f:5,birim:30},
+  {n:"Mısır (patlamış, 1 kase ~30g)",cal:375,p:11,c:74,f:4,birim:30},
+  {n:"Çekirdek (ay, 1 avuç ~30g)",cal:584,p:21,c:20,f:51,birim:30},
+  {n:"Çekirdek (kabak, 1 avuç ~30g)",cal:559,p:30,c:11,f:49,birim:30},
+  // HAZIR & KONSERVE
+  {n:"Ton balığı (konserve, 1 kutu ~160g)",cal:116,p:26,c:0,f:1,birim:160},
+  {n:"Fasulye konserve (1 kaşık ~50g)",cal:77,p:5,c:14,f:0.4,birim:50},
+  {n:"Mısır konserve (1 kaşık ~50g)",cal:86,p:3.2,c:18,f:1.2,birim:50},
+  {n:"Bezelye konserve (1 kaşık ~50g)",cal:77,p:5,c:14,f:0.4,birim:50},
+  {n:"Salça (domates, 1 kaşık ~15g)",cal:82,p:3.5,c:18,f:0.5,birim:15},
+  {n:"Salça (biber, 1 kaşık ~15g)",cal:90,p:3,c:19,f:1,birim:15},
+  {n:"Turşu (karışık, 1 kaşık ~30g)",cal:11,p:0.5,c:2.3,f:0.1,birim:30},
+  {n:"Zeytin ezmesi (1 kaşık ~20g)",cal:120,p:0.8,c:3,f:12,birim:20},
+  {n:"Acuka (1 kaşık ~15g)",cal:85,p:2,c:8,f:5,birim:15},
   // OTLAR & BAHARATLAR
   {n:"Dereotu (1 dal ~5g)",cal:43,p:3.5,c:7,f:1.1,birim:5},
   {n:"Maydanoz (1 dal ~5g)",cal:36,p:3,c:6.3,f:0.8,birim:5},
@@ -1452,219 +1537,4 @@ function saveDay(){
 function copyAndEval(){
   const p=profiles[ap],t=getTotals(),g=p.goals;
   const foods=state.foods[ap].map(f=>f.data.n).join(', ')||'yok';
-  const txt=p.label+' için bugünkü özet:\n'+
-    'Kalori: '+Math.round(t.cal)+'/'+g.calories+' kal\n'+
-    'Protein: '+Math.round(t.p)+'g / '+g.protein+'g\n'+
-    'Karbonhidrat: '+Math.round(t.c)+'g / '+g.carbs+'g\n'+
-    'Yağ: '+Math.round(t.f)+'g / '+g.fat+'g\n'+
-    'Yenilen besinler: '+foods+'\n'+
-    'Profil: '+p.meta+'\n\n'+
-    'Bu rakamlara göre günü değerlendir. Eksik/fazla makrolar için somut öneri ver.';
-  navigator.clipboard&&navigator.clipboard.writeText(txt).then(()=>alert('✅ Panoya kopyalandı! Buraya yapıştır.'));
-}
-
-function changeDate(val){
-  if(val==='today'){
-    SELECTED_DATE = TODAY;
-  } else {
-    const parts = val.split('-');
-    SELECTED_DATE = parts[2]+'.'+parts[1]+'.'+parts[0];
-  }
-  // O günün verisini state'e yükle
-  const saved = loadFromStorage(SELECTED_DATE);
-  // Önce state'i sıfırla
-  state.foods = {0:[],1:[],2:[]};
-  state.supps = {0:{},1:{},2:{}};
-  state.exChecks = {0:{},1:{},2:{}};
-  daily.water={0:0,1:0,2:0};
-  daily.tea={0:0,1:0,2:0};
-  daily.coffee={0:0,1:0,2:0};
-  daily.cigarette={0:0,1:0,2:0};
-  daily.sugar={0:[],1:[],2:[]};
-  if(saved){
-    if(saved.state){
-      if(saved.state.foods) Object.assign(state.foods,saved.state.foods);
-      if(saved.state.supps) Object.assign(state.supps,saved.state.supps);
-      if(saved.state.exChecks) Object.assign(state.exChecks,saved.state.exChecks);
-    }
-    if(saved.daily){
-      if(saved.daily.water) Object.assign(daily.water,saved.daily.water);
-      if(saved.daily.tea) Object.assign(daily.tea,saved.daily.tea);
-      if(saved.daily.coffee) Object.assign(daily.coffee,saved.daily.coffee);
-      if(saved.daily.cigarette) Object.assign(daily.cigarette,saved.daily.cigarette);
-      if(saved.daily.sugar) Object.assign(daily.sugar,saved.daily.sugar);
-    }
-  }
-  _fullRender();
-}
-
-window.addEventListener('load',()=>{
-  const saved=localStorage.getItem('scriptUrl')||'';
-  if(saved)document.getElementById('scriptUrl').value=saved;
-  // Tarih seçiciyi bugüne ayarla
-  const dp = document.getElementById('datePicker');
-  if(dp){
-    const now = new Date();
-    dp.value = now.toISOString().split('T')[0];
-  }
-  loadToday();
-  _fullRender();
-});
-
-function _fullRender(){
-  render();
-  renderDaily();
-  renderHistory();
-}
-
-// OTOMATİK KAYDET - her değişiklikte
-function autoSave(){ saveToStorage(); }
-
-let historyAp = 0; // geçmiş için aktif profil
-
-function renderHistory(){
-  const el=document.getElementById('historyList');
-  if(!el) return;
-
-  // Profil tabları
-  const tabsHtml = profiles.map((p,i)=>
-    '<button onclick="switchHistoryAp('+i+')" style="padding:5px 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid '+(i===historyAp?'#1a1a1a':'#ddd')+';background:'+(i===historyAp?'#1a1a1a':'#fff')+';color:'+(i===historyAp?'#fff':'#666')+';margin-right:4px">'+p.label+'</button>'
-  ).join('');
-
-  const days=getArchivedDays();
-  let daysHtml = '';
-  if(!days.length){
-    daysHtml='<div style="font-size:13px;color:#aaa;padding:8px 0">Henüz kayıtlı gün yok.<br>Günü Kaydet butonunu kullan.</div>';
-  } else {
-    daysHtml=days.map(d=>{
-      const saved=loadFromStorage(d);
-      if(!saved) return '';
-      const foods=(saved.state&&saved.state.foods&&saved.state.foods[historyAp])||[];
-      const totals=foods.reduce((a,f)=>{
-        const m=(f.gram||100)/100;
-        a.cal+=(f.data.cal||0)*m; a.p+=(f.data.p||0)*m;
-        a.c+=(f.data.c||0)*m; a.f+=(f.data.f||0)*m; return a;
-      },{cal:0,p:0,c:0,f:0});
-      const water=(saved.daily&&saved.daily.water&&saved.daily.water[historyAp])||0;
-      const cig=(saved.daily&&saved.daily.cigarette&&saved.daily.cigarette[historyAp])||0;
-      const tea=(saved.daily&&saved.daily.tea&&saved.daily.tea[historyAp])||0;
-      const coffee=(saved.daily&&saved.daily.coffee&&saved.daily.coffee[historyAp])||0;
-      const isToday=d===TODAY;
-      const g=profiles[historyAp].goals;
-      const protPct=Math.min(100,Math.round((totals.p/g.protein)*100));
-      const calPct=Math.min(100,Math.round((totals.cal/g.calories)*100));
-      return '<div style="background:'+(isToday?'#f0f8ff':'#f9f9f9')+';border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1.5px solid '+(isToday?'#aed6f1':'#eee')+'">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-        +'<span style="font-weight:600;font-size:14px;color:#1a1a1a">'+(isToday?'📌 Bugün — ':'')+d+'</span>'
-        +'<button onclick="loadDay(\"'+d+'\")" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555">Yükle</button>'
-        +'</div>'
-        // Kalori ve protein progress
-        +'<div style="font-size:11px;color:#888;margin-bottom:2px">Kalori: '+Math.round(totals.cal)+'/'+g.calories+' ('+calPct+'%)</div>'
-        +'<div style="height:4px;background:#eee;border-radius:999px;margin-bottom:6px"><div style="height:100%;width:'+calPct+'%;background:#c0392b;border-radius:999px"></div></div>'
-        +'<div style="font-size:11px;color:#888;margin-bottom:2px">Protein: '+Math.round(totals.p)+'g/'+g.protein+'g ('+protPct+'%)</div>'
-        +'<div style="height:4px;background:#eee;border-radius:999px;margin-bottom:8px"><div style="height:100%;width:'+protPct+'%;background:#1a5276;border-radius:999px"></div></div>'
-        // Özet satırı
-        +'<div style="display:flex;gap:10px;font-size:12px;color:#666;flex-wrap:wrap">'
-        +(water>0?'<span>💧 '+(water>=1000?(water/1000).toFixed(1)+'L':water+'ml')+'</span>':'')
-        +(tea>0?'<span>🫖 '+tea+' çay</span>':'')
-        +(coffee>0?'<span>☕ '+coffee+' kahve</span>':'')
-        +(cig>0?'<span>🚬 '+cig+' sigara</span>':'')
-        +'</div>'
-        +'</div>';
-    }).join('');
-  }
-
-  el.innerHTML = '<div style="margin-bottom:10px">'+tabsHtml+'</div>' + daysHtml;
-}
-
-function switchHistoryAp(i){
-  historyAp=i;
-  renderHistory();
-}
-
-function loadDay(dateStr){
-  const saved=loadFromStorage(dateStr);
-  if(!saved){alert('Bu güne ait veri bulunamadı');return;}
-  if(saved.state){
-    if(saved.state.foods) Object.assign(state.foods,saved.state.foods);
-    if(saved.state.supps) Object.assign(state.supps,saved.state.supps);
-    if(saved.state.exChecks) Object.assign(state.exChecks,saved.state.exChecks);
-  }
-  if(saved.daily){
-    if(saved.daily.water) Object.assign(daily.water,saved.daily.water);
-    if(saved.daily.tea) Object.assign(daily.tea,saved.daily.tea);
-    if(saved.daily.coffee) Object.assign(daily.coffee,saved.daily.coffee);
-    if(saved.daily.cigarette) Object.assign(daily.cigarette,saved.daily.cigarette);
-    if(saved.daily.sugar) Object.assign(daily.sugar,saved.daily.sugar);
-  }
-  render();
-  alert(dateStr+' tarihi yüklendi.');
-}
-// ── GÜNLÜK TAKİP FONKSİYONLARI ──
-
-function addWater(ml){
-  daily.water[ap] = Math.max(0, (daily.water[ap]||0) + ml);
-  renderDaily();autoSave();
-}
-function addDrink(type, n){
-  daily[type][ap] = Math.max(0, (daily[type][ap]||0) + n);
-  renderDaily();autoSave();
-}
-function addCigarette(n){
-  daily.cigarette[ap] = Math.max(0, (daily.cigarette[ap]||0) + n);
-  renderDaily();autoSave();
-}
-function saveSugar(){
-  const fasting = document.getElementById('sugarFasting').value;
-  const postmeal = document.getElementById('sugarPostmeal').value;
-  if(!fasting && !postmeal){ alert('En az bir değer girin'); return; }
-  const now = new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
-  daily.sugar[ap].push({fasting: fasting||'—', postmeal: postmeal||'—', time: now});
-  document.getElementById('sugarFasting').value='';
-  document.getElementById('sugarPostmeal').value='';
-  renderDaily();
-}
-
-function renderDaily(){
-  const water = daily.water[ap]||0;
-  const goal = 3000;
-  const pct = Math.min(100, Math.round(water/goal*100));
-  document.getElementById('waterDisplay').textContent = water >= 1000 ? (water/1000).toFixed(1)+'L' : water+'ml';
-  document.getElementById('waterPct').textContent = pct+'%';
-  document.getElementById('waterBar').style.width = pct+'%';
-
-  document.getElementById('teaCount').textContent = daily.tea[ap]||0;
-  document.getElementById('coffeeCount').textContent = daily.coffee[ap]||0;
-
-  const cig = daily.cigarette[ap]||0;
-  document.getElementById('cigaretteCount').textContent = cig;
-  const notes = ['Bugün hiç içmedin 💪','1 tane — az ama var 🙁','2 tane — dikkat et ⚠️','3+ tane — düşün bir 🚨'];
-  document.getElementById('cigaretteNote').textContent = cig===0?notes[0]:cig===1?notes[1]:cig===2?notes[2]:cig+' adet — azaltmayı dene 🚨';
-  document.getElementById('cigaretteNote').style.color = cig===0?'#2d6a4f':cig<=2?'#d35400':'#c0392b';
-
-  // Şeker kartı sadece İsmail'de (ap===1)
-  const sugarCard = document.getElementById('sugarCard');
-  sugarCard.style.display = profiles[ap].isAnne ? 'block' : 'none';
-
-  if(profiles[ap].isAnne){
-    const history = daily.sugar[ap]||[];
-    const el = document.getElementById('sugarHistory');
-    if(!history.length){ el.innerHTML='<div style="font-size:12px;color:#aaa">Henüz ölçüm yok</div>'; return; }
-    el.innerHTML = '<div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:600">BUGÜNKÜ ÖLÇÜMLER</div>' +
-      history.map(h=>{
-        const fColor = h.fasting!=='—' ? (parseInt(h.fasting)<=100?'#2d6a4f':parseInt(h.fasting)<=125?'#d35400':'#c0392b') : '#aaa';
-        const pColor = h.postmeal!=='—' ? (parseInt(h.postmeal)<=140?'#2d6a4f':parseInt(h.postmeal)<=199?'#d35400':'#c0392b') : '#aaa';
-        return '<div style="display:flex;gap:10px;align-items:center;padding:8px;background:#f9f9f9;border-radius:8px;margin-bottom:6px;font-size:13px">'
-          +'<span style="color:#aaa;font-size:11px">'+h.time+'</span>'
-          +'<span>Açlık: <b style="color:'+fColor+'">'+h.fasting+'</b></span>'
-          +'<span>Tokluk: <b style="color:'+pColor+'">'+h.postmeal+'</b></span>'
-          +'</div>';
-      }).join('');
-  }
-}
-
-// Override render to also call renderDaily
-// render çağrıları _fullRender üzerinden yapılıyor
-</script>
-</body>
-</html>
+  const txt=p.label+' için bugünkü özet
