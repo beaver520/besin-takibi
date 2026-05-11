@@ -1253,7 +1253,7 @@ function renderFoods(){
     const carb=Math.round(f.data.c*m);
     const fat=Math.round(f.data.f*m);
     return `<div class="food-row">
-      <span class="fname">${f.data.n}</span>
+      <span class="fname" style="cursor:pointer" onclick="editFood(${i})" title="Düzenle">✏️ ${f.data.n}</span>
       <span class="fval">${f.gram}g</span>
       <span class="fval">${f.adet||'—'}</span>
       <span class="fcal">${kcal}</span>
@@ -1455,6 +1455,18 @@ function addManual(){
   renderFoods();renderMetrics();
 }
 
+function editFood(i){
+  const f = state.foods[ap][i];
+  const newGram = prompt(f.data.n + ' — yeni gram miktarı:', f.gram);
+  if(newGram === null) return;
+  const g = parseFloat(newGram);
+  if(!g || g <= 0){ alert('Geçersiz değer'); return; }
+  state.foods[ap][i].gram = g;
+  const newAdet = prompt('Adet (boş bırakabilirsin):', f.adet||'');
+  if(newAdet !== null) state.foods[ap][i].adet = newAdet || null;
+  renderFoods();renderMetrics();autoSave();
+}
+
 function delFood(i){state.foods[ap].splice(i,1);renderFoods();renderMetrics();autoSave();}
 
 // SUPPLEMENTS
@@ -1604,13 +1616,13 @@ function renderHistory(){
   const el=document.getElementById('historyList');
   if(!el) return;
 
-  // Profil tabları
   const tabsHtml = profiles.map((p,i)=>
-    '<button onclick="switchHistoryAp('+i+')" style="padding:5px 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid '+(i===historyAp?'#1a1a1a':'#ddd')+';background:'+(i===historyAp?'#1a1a1a':'#fff')+';color:'+(i===historyAp?'#fff':'#666')+';margin-right:4px">'+p.label+'</button>'
+    '<button onclick="switchHistoryAp('+i+')" style="padding:5px 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid '+(i===historyAp?'#1a1a1a':'#ddd')+';background:'+(i===historyAp?'#1a1a1a':'#fff')+';color:'+(i===historyAp?'#fff':'#666')+';margin-right:4px;margin-bottom:6px">'+p.label+'</button>'
   ).join('');
 
   const days=getArchivedDays();
-  let daysHtml = '';
+  let daysHtml='';
+
   if(!days.length){
     daysHtml='<div style="font-size:13px;color:#aaa;padding:8px 0">Henüz kayıtlı gün yok.<br>Günü Kaydet butonunu kullan.</div>';
   } else {
@@ -1620,9 +1632,10 @@ function renderHistory(){
       const foods=(saved.state&&saved.state.foods&&saved.state.foods[historyAp])||[];
       const totals=foods.reduce((a,f)=>{
         const m=(f.gram||100)/100;
-        a.cal+=(f.data.cal||0)*m; a.p+=(f.data.p||0)*m;
-        a.c+=(f.data.c||0)*m; a.f+=(f.data.f||0)*m; return a;
-      },{cal:0,p:0,c:0,f:0});
+        a.cal+=(f.data&&f.data.cal||0)*m;
+        a.p+=(f.data&&f.data.p||0)*m;
+        return a;
+      },{cal:0,p:0});
       const water=(saved.daily&&saved.daily.water&&saved.daily.water[historyAp])||0;
       const cig=(saved.daily&&saved.daily.cigarette&&saved.daily.cigarette[historyAp])||0;
       const tea=(saved.daily&&saved.daily.tea&&saved.daily.tea[historyAp])||0;
@@ -1631,20 +1644,19 @@ function renderHistory(){
       const g=profiles[historyAp].goals;
       const protPct=Math.min(100,Math.round((totals.p/g.protein)*100));
       const calPct=Math.min(100,Math.round((totals.cal/g.calories)*100));
+
       return '<div style="background:'+(isToday?'#f0f8ff':'#f9f9f9')+';border-radius:10px;padding:12px 14px;margin-bottom:8px;border:1.5px solid '+(isToday?'#aed6f1':'#eee')+'">'
         +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
         +'<span style="font-weight:600;font-size:14px;color:#1a1a1a">'+(isToday?'📌 Bugün — ':'')+d+'</span>'
         +'<div style="display:flex;gap:4px">'
-      +'<button onclick="loadDay(\"'+d+'\")" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555">Yükle</button>'
-      +'<button onclick="deleteDay(\"'+d+'\")" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ffcdd2;background:#fff;cursor:pointer;color:#c0392b">Sil</button>'
-      +'</div>'
+        +'<button data-date="'+d+'" onclick="loadDay(this.dataset.date)" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555">Yükle</button>'
+        +'<button data-date="'+d+'" onclick="deleteDay(this.dataset.date)" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #ffcdd2;background:#fff;cursor:pointer;color:#c0392b">Sil</button>'
         +'</div>'
-        // Kalori ve protein progress
+        +'</div>'
         +'<div style="font-size:11px;color:#888;margin-bottom:2px">Kalori: '+Math.round(totals.cal)+'/'+g.calories+' ('+calPct+'%)</div>'
         +'<div style="height:4px;background:#eee;border-radius:999px;margin-bottom:6px"><div style="height:100%;width:'+calPct+'%;background:#c0392b;border-radius:999px"></div></div>'
         +'<div style="font-size:11px;color:#888;margin-bottom:2px">Protein: '+Math.round(totals.p)+'g/'+g.protein+'g ('+protPct+'%)</div>'
         +'<div style="height:4px;background:#eee;border-radius:999px;margin-bottom:8px"><div style="height:100%;width:'+protPct+'%;background:#1a5276;border-radius:999px"></div></div>'
-        // Özet satırı
         +'<div style="display:flex;gap:10px;font-size:12px;color:#666;flex-wrap:wrap">'
         +(water>0?'<span>💧 '+(water>=1000?(water/1000).toFixed(1)+'L':water+'ml')+'</span>':'')
         +(tea>0?'<span>🫖 '+tea+' çay</span>':'')
@@ -1655,8 +1667,9 @@ function renderHistory(){
     }).join('');
   }
 
-  el.innerHTML = '<div style="margin-bottom:10px">'+tabsHtml+'</div>' + daysHtml;
+  el.innerHTML='<div style="margin-bottom:10px">'+tabsHtml+'</div>'+daysHtml;
 }
+
 
 function switchHistoryAp(i){
   historyAp=i;
