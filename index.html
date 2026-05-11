@@ -1127,21 +1127,102 @@ function renderFoods(){
 }
 
 // SEARCH
+let searchTimer = null;
+
 function searchFood(){
-  const q=document.getElementById('foodSearch').value.trim().toLowerCase();
-  const sl=document.getElementById('suggestList');
-  if(q.length<1){sl.style.display='none';return;}
-  const results=FOODS.filter(f=>f.n.toLowerCase().includes(q)).slice(0,10);
-  if(!results.length){sl.style.display='none';return;}
+  const q = document.getElementById('foodSearch').value.trim();
+  const sl = document.getElementById('suggestList');
+  if(q.length < 2){ sl.style.display='none'; return; }
+
+  // Yerel veritabanında ara
+  const local = FOODS.filter(f => f.n.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+
+  // Yerel sonuçları hemen göster
   sl.style.display='block';
-  sl.innerHTML=results.map(f=>`
-    <div class="suggest-item" onclick="openModal(${FOODS.indexOf(f)})">
-      <span>${f.n}</span>
-      <span class="smeta" style="color:#c0392b">${f.cal}</span>
-      <span class="smeta" style="color:#1a5276">${f.p}P</span>
-      <span class="smeta" style="color:#2980b9">${f.c}K</span>
-      <span class="smeta" style="color:#27ae60">${f.f}Y</span>
-    </div>`).join('');
+  sl.innerHTML = renderLocalResults(local) +
+    '<div style="font-size:11px;color:#aaa;padding:5px 12px;border-top:1px solid #f0f0f0">🌐 Geniş veritabanında aranıyor...</div>';
+
+  // API araması debounce
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => searchAPI(q, local), 500);
+}
+
+function renderLocalResults(local){
+  if(!local.length) return '';
+  return '<div style="font-size:10px;color:#2d6a4f;padding:3px 12px;background:#f5fff5;font-weight:600">✓ Yerel</div>' +
+    local.map(f =>
+      '<div class="suggest-item" onclick="openModal('+FOODS.indexOf(f)+')">'+
+        '<span>'+f.n+'</span>'+
+        '<span class="smeta" style="color:#c0392b">'+f.cal+'</span>'+
+        '<span class="smeta" style="color:#1a5276">'+f.p+'P</span>'+
+        '<span class="smeta" style="color:#2980b9">'+f.c+'K</span>'+
+        '<span class="smeta" style="color:#27ae60">'+f.f+'Y</span>'+
+      '</div>'
+    ).join('');
+}
+
+async function searchAPI(q, local){
+  const sl = document.getElementById('suggestList');
+  try {
+    const res = await fetch(
+      'https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=10&lc=tr',
+      { signal: AbortSignal.timeout(6000) }
+    );
+    const data = await res.json();
+    const products = (data.products||[])
+      .filter(p => p.nutriments && (p.product_name_tr || p.product_name))
+      .map(p => {
+        const n = p.nutriments;
+        return {
+          n: p.product_name_tr || p.product_name || 'Bilinmeyen',
+          cal: Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || 0),
+          p: Math.round((n['proteins_100g']||0)*10)/10,
+          c: Math.round((n['carbohydrates_100g']||0)*10)/10,
+          f: Math.round((n['fat_100g']||0)*10)/10,
+        };
+      })
+      .filter(p => p.cal > 0 || p.p > 0)
+      .slice(0, 8);
+
+    window._apiResults = products;
+
+    const apiHtml = products.length
+      ? '<div style="font-size:10px;color:#888;padding:3px 12px;background:#f9f9f9;font-weight:600;border-top:1px solid #eee">🌐 OpenFoodFacts ('+products.length+' sonuç)</div>' +
+        products.map((p,i) =>
+          '<div class="suggest-item" onclick="selectAPIFood('+i+')">'+
+            '<span>'+p.n+'</span>'+
+            '<span class="smeta" style="color:#c0392b">'+p.cal+'</span>'+
+            '<span class="smeta" style="color:#1a5276">'+p.p+'P</span>'+
+            '<span class="smeta" style="color:#2980b9">'+p.c+'K</span>'+
+            '<span class="smeta" style="color:#27ae60">'+p.f+'Y</span>'+
+          '</div>'
+        ).join('')
+      : '<div style="font-size:11px;color:#aaa;padding:5px 12px;border-top:1px solid #f0f0f0">🌐 API sonuç yok</div>';
+
+    sl.innerHTML = renderLocalResults(local) + apiHtml;
+    sl.style.display = 'block';
+  } catch(e) {
+    const localHtml = renderLocalResults(local);
+    sl.innerHTML = localHtml || '<div style="font-size:12px;color:#aaa;padding:8px 12px">Sonuç bulunamadı</div>';
+    if(localHtml) sl.innerHTML += '<div style="font-size:11px;color:#aaa;padding:5px 12px">🌐 API bağlantısı yok</div>';
+  }
+}
+
+function selectAPIFood(idx){
+  const p = window._apiResults && window._apiResults[idx];
+  if(!p) return;
+  document.getElementById('suggestList').style.display='none';
+  pendingFood = null;
+  window._pendingAPIFood = p;
+  document.getElementById('modalFoodName').textContent = p.n;
+  document.getElementById('modalFoodMeta').textContent = '100g başına: '+p.cal+' kal · '+p.p+'g protein · '+p.c+'g karb · '+p.f+'g yağ';
+  document.getElementById('modalAdetWrap').style.display='none';
+  document.getElementById('modalGramWrap').style.display='block';
+  document.getElementById('modalGram').value='100';
+  document.getElementById('modalTotal').textContent='';
+  document.getElementById('gramModal').classList.add('open');
+  document.getElementById('foodSearch').value='';
+  setTimeout(()=>document.getElementById('modalGram').focus(),100);
 }
 
 // MODAL
@@ -1184,15 +1265,28 @@ function closeModal(){
   pendingFood=null;
 }
 function confirmAdd(){
-  if(pendingFood===null)return;
-  const f=FOODS[pendingFood];
-  let gram=parseFloat(document.getElementById('modalGram').value)||0;
-  const adet=parseFloat(document.getElementById('modalAdet').value)||0;
-  // Adet girilmişse gram = adet * birim gram (modalGram'daki değer birim ağırlık)
-  const birimGram = gram;
-  const toplamGram = adet>0 ? Math.round(adet * birimGram) : birimGram;
-  if(!toplamGram||toplamGram<=0){alert('Gram veya adet giriniz');return;}
-  state.foods[ap].push({data:f, gram:toplamGram, adet:adet||null, birimGram:birimGram});
+  const gram = parseFloat(document.getElementById('modalGram').value)||0;
+  const adet = parseFloat(document.getElementById('modalAdet').value)||0;
+
+  let foodData, toplamGram;
+
+  if(pendingFood !== null){
+    // Yerel veritabanı
+    const f = FOODS[pendingFood];
+    const birimGram = gram;
+    toplamGram = adet > 0 ? Math.round(adet * birimGram) : birimGram;
+    foodData = f;
+  } else if(window._pendingAPIFood){
+    // API ürünü
+    toplamGram = gram || 100;
+    foodData = window._pendingAPIFood;
+  } else {
+    return;
+  }
+
+  if(!toplamGram||toplamGram<=0){alert('Gram giriniz');return;}
+  state.foods[ap].push({data:foodData, gram:toplamGram, adet:adet||null});
+  window._pendingAPIFood = null;
   closeModal();
   renderFoods();renderMetrics();autoSave();
 }
